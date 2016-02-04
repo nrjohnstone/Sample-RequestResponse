@@ -1,4 +1,6 @@
-﻿namespace RequestService
+﻿using System.Threading;
+
+namespace RequestService
 {
     using System.Threading.Tasks;
     using MassTransit;
@@ -15,6 +17,7 @@
         {
             _log.InfoFormat("Returning name for {0}", context.Message.CustomerId);
 
+            Thread.Sleep(5000);
             context.Respond(new SimpleResponse
             {
                 CusomerName = string.Format("Customer Number {0}", context.Message.CustomerId)

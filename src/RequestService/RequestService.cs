@@ -8,8 +8,7 @@
     using Topshelf.Logging;
 
 
-    class RequestService :
-        ServiceControl
+    class RequestService : ServiceControl
     {
         readonly LogWriter _log = HostLogger.Get<RequestService>();
 

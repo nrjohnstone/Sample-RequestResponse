@@ -1,4 +1,6 @@
-﻿namespace Client
+﻿using System.Threading;
+
+namespace Client
 {
     using System;
     using System.Configuration;
@@ -35,13 +37,38 @@
                     if (customerId == "quit")
                         break;
 
+                    Console.WriteLine($"Main thread {Thread.CurrentThread.ManagedThreadId}");
                     // this is run as a Task to avoid weird console application issues
-                    Task.Run(async () =>
-                    {
-                        ISimpleResponse response = await client.Request(new SimpleRequest(customerId));
+                    //var t1 = Task.Run(async () =>
+                    //{
+                    //    await GetCustomerName(client, customerId);
+                    //});
 
-                        Console.WriteLine("Customer Name: {0}", response.CusomerName);
-                    }).Wait();
+                    //var t2 = Task.Run(async () =>
+                    //{
+                    //    await GetCustomerName(client, customerId);
+                    //});
+                    var mainTask = Task.Run(async () =>
+                    {
+                        Task<string> t1 = GetCustomerName(client, customerId);
+                        Task<string> t2 = GetCustomerName(client, customerId);
+
+                        string r1 = await t1;
+                        Console.WriteLine("async task 1 returned");
+                        string r2 = await t2;
+                        Console.WriteLine("async task 2 returned");
+
+                        //string r1 = await GetCustomerName(client, customerId);
+                        //string r2 = await GetCustomerName(client, customerId);
+
+                        Console.WriteLine("Customer Name: {0}", r1);
+                        Console.WriteLine("Customer Name: {0}", r2);
+                    });
+
+                    Console.WriteLine("Doing some other stuff...");
+                    mainTask.Wait();
+                    Console.WriteLine("all responses received");
+
                 }
             }
             catch (Exception ex)
@@ -52,6 +79,16 @@
             {
                 busControl.Stop();
             }
+        }
+
+
+        private static async Task<string> GetCustomerName(IRequestClient<ISimpleRequest, ISimpleResponse> client, string customerId)
+        {
+            Console.WriteLine($"async call on thread {Thread.CurrentThread.ManagedThreadId}");
+            ISimpleResponse response = await client.Request(new SimpleRequest(customerId));
+            Console.WriteLine("client response received");
+            return response.CusomerName;
+            
         }
 
 
